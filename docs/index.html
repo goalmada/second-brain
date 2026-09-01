@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Second Brain</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Black&family=Baloo+2:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    /* day sky */
+    --page:#EFF3FA;
+    --sky-1:#CBE1FF;--sky-2:#E9F2FF;
+    --canvas-brd:#FFFFFF;
+    --ink:#0C1017;--ink-soft:#3C4557;--muted:#78839A;
+    --card:#FFFFFF;--card-2:#F5F8FE;--line:#E2E9F4;--line-2:#D2DCEC;
+    --blue:#3B6EF0;--blue-deep:#2A50C4;--blue-soft:#EAF1FF;--blue-line:#C6D8FB;
+    --glass-hi:#F3F8FF;--good:#2E9E6B;
+    --shadow-lg:0 30px 70px -30px rgba(30,60,140,.45);
+    --shadow-sm:0 2px 4px rgba(20,40,90,.05),0 12px 30px -18px rgba(20,40,90,.30);
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --page:#070A12;
+    --sky-1:#0E1A33;--sky-2:#0B1424;
+    --canvas-brd:#1B2740;
+    --ink:#EFF4FF;--ink-soft:#B7C3DA;--muted:#7C89A3;
+    --card:#0E1524;--card-2:#121B2E;--line:#1E2941;--line-2:#2A3856;
+    --blue:#6E9BF5;--blue-deep:#3B6EF0;--blue-soft:#15213A;--blue-line:#2C3F63;
+    --glass-hi:#DCE9FF;--good:#63C79A;
+    --shadow-lg:0 30px 80px -30px rgba(0,0,0,.8);
+    --shadow-sm:0 2px 4px rgba(0,0,0,.4),0 14px 34px -20px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    --page:#070A12;--sky-1:#0E1A33;--sky-2:#0B1424;--canvas-brd:#1B2740;
+    --ink:#EFF4FF;--ink-soft:#B7C3DA;--muted:#7C89A3;
+    --card:#0E1524;--card-2:#121B2E;--line:#1E2941;--line-2:#2A3856;
+    --blue:#6E9BF5;--blue-deep:#3B6EF0;--blue-soft:#15213A;--blue-line:#2C3F63;
+    --glass-hi:#DCE9FF;--good:#63C79A;
+    --shadow-lg:0 30px 80px -30px rgba(0,0,0,.8);
+    --shadow-sm:0 2px 4px rgba(0,0,0,.4),0 14px 34px -20px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:"Archivo",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 22px}
+  h1,h2,h3{margin:0;text-wrap:balance}
+  p{margin:0}
+  a{color:inherit}
+  .heavy{font-family:"Archivo Black","Archivo",sans-serif;font-weight:400;letter-spacing:-.02em}
+
+  /* ---------- top bar ---------- */
+  .bar{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--page) 82%,transparent);backdrop-filter:blur(12px)}
+  .bar .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:"Archivo",sans-serif;font-weight:800;letter-spacing:-.01em;font-size:1.02rem}
+  .brand .b{width:24px;height:24px;border-radius:8px;background:linear-gradient(150deg,#8FB4FF,#3B6EF0 55%,#2A50C4);box-shadow:inset 0 1px 2px rgba(255,255,255,.7),0 4px 10px -3px rgba(43,86,240,.6)}
+  .navlinks{display:flex;align-items:center;gap:6px}
+  .toggle{appearance:none;border:1px solid var(--line-2);background:var(--card);color:var(--ink-soft);width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.2s}
+  .toggle:hover{border-color:var(--blue);color:var(--blue)}
+  .btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:.82rem;font-weight:500;padding:10px 16px;border-radius:11px;border:1px solid transparent;text-decoration:none;transition:transform .15s,box-shadow .2s,background .2s,border-color .2s}
+  .btn-primary{background:linear-gradient(180deg,#5A85F5,#3B6EF0 60%,#2E58D8);color:#fff;box-shadow:inset 0 1px 1px rgba(255,255,255,.5),0 10px 22px -10px rgba(43,86,240,.7)}
+  .btn-primary:hover{transform:translateY(-1px)}
+  .btn-ghost{border-color:var(--line-2);color:var(--ink-soft);background:var(--card)}
+  .btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+  .navlinks .btn-ghost{border-color:transparent;background:transparent}
+
+  /* ---------- hero canvas ---------- */
+  .hero{padding:14px 14px 0}
+  .canvas{position:relative;border-radius:30px;overflow:hidden;min-height:min(78vh,660px);border:8px solid var(--canvas-brd);background:linear-gradient(170deg,var(--sky-1),var(--sky-2) 70%);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;justify-content:space-between;padding:26px}
+  .canvas::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+     radial-gradient(40% 30% at 20% 12%, rgba(255,255,255,.75), transparent 70%),
+     radial-gradient(46% 34% at 82% 22%, rgba(255,255,255,.55), transparent 72%),
+     radial-gradient(50% 40% at 60% 100%, rgba(255,255,255,.4), transparent 70%);
+     opacity:.9}
+  :root[data-theme="dark"] .canvas::before{background:
+     radial-gradient(45% 34% at 78% 14%, rgba(120,160,255,.20), transparent 72%),
+     radial-gradient(40% 30% at 12% 30%, rgba(90,130,240,.16), transparent 70%);opacity:1}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .canvas::before{background:
+     radial-gradient(45% 34% at 78% 14%, rgba(120,160,255,.20), transparent 72%),
+     radial-gradient(40% 30% at 12% 30%, rgba(90,130,240,.16), transparent 70%);opacity:1}}
+
+  .corner{position:relative;z-index:2;display:flex;justify-content:space-between;gap:16px}
+  .lbl{font-family:"IBM Plex Mono",monospace;font-size:.7rem;line-height:1.5;letter-spacing:.04em;color:var(--ink-soft)}
+  .lbl .dim{color:var(--muted)}
+  .corner.top .lbl:last-child{text-align:right;max-width:34ch}
+  .tick{font-size:.6rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+
+  .stage{position:relative;z-index:2;flex:1;display:grid;place-items:center;padding:6px 0}
+  .glossy{position:relative;font-family:"Baloo 2",cursive;font-weight:800;font-size:clamp(5rem,20vw,15rem);line-height:.8;letter-spacing:-.01em;
+    background:linear-gradient(178deg,#F1F7FF 2%,#AFC8FB 30%,#5A85F5 58%,#2E58D8 82%,#274FCB 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 18px 26px rgba(38,74,180,.42)) drop-shadow(0 2px 1px rgba(255,255,255,.6));
+    animation:bob 6s ease-in-out infinite}
+  .glossy::after{content:attr(data-word);position:absolute;inset:0;
+    background:linear-gradient(178deg,rgba(255,255,255,.95) 4%,rgba(255,255,255,.35) 22%,rgba(255,255,255,0) 42%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;pointer-events:none}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-14px) rotate(.6deg)}}
+  @media (prefers-reduced-motion:reduce){.glossy{animation:none}}
+
+  .headline{position:relative;z-index:3;max-width:15ch}
+  .headline h1{font-family:"Archivo Black","Archivo",sans-serif;font-weight:400;color:var(--ink);
+    font-size:clamp(1.9rem,4.8vw,3.2rem);line-height:.98;letter-spacing:-.03em;text-transform:uppercase}
+  .headline .accent{color:var(--blue-deep)}
+  :root[data-theme="dark"] .headline .accent{color:var(--blue)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .headline .accent{color:var(--blue)}}
+
+  .cursor3d{position:absolute;right:5%;bottom:20%;width:74px;height:74px;z-index:2;filter:drop-shadow(0 14px 20px rgba(38,74,180,.4));animation:bob 6s ease-in-out infinite reverse}
+  @media (max-width:640px){.cursor3d{width:52px;height:52px;bottom:26%;right:6%}}
+
+  /* CTA strip */
+  .ctastrip{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;padding:26px 22px 8px}
+  .ctastrip .note{font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--muted)}
+
+  /* ---------- sections ---------- */
+  .band{padding:70px 0}
+  .band.tint{background:linear-gradient(180deg,transparent,var(--card-2) 12%,var(--card-2) 88%,transparent)}
+  .eyebrow{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:.7rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);background:var(--blue-soft);border:1px solid var(--blue-line);padding:5px 11px;border-radius:99px}
+  .head{max-width:60ch;margin-bottom:38px}
+  .head h2{font-family:"Archivo Black","Archivo",sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(1.7rem,4vw,2.7rem);line-height:1;margin-top:16px}
+  .head p{margin-top:14px;color:var(--ink-soft);font-size:1.06rem}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:var(--shadow-sm)}
+  .tag{display:inline-flex;align-items:center;gap:8px;font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);background:var(--blue-soft);border:1px solid var(--blue-line);padding:5px 10px;border-radius:99px}
+  .card h3{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.35rem;letter-spacing:-.01em;margin:15px 0 8px}
+  .card p{color:var(--ink-soft);font-size:.98rem}
+
+  .cmd{margin-top:18px;background:#0B1220;border:1px solid #1a2740;color:#E7EEFF;border-radius:12px;font-family:"IBM Plex Mono",monospace;font-size:.8rem;display:flex;align-items:center;gap:10px;padding:12px 14px}
+  .cmd code{flex:1;white-space:nowrap;overflow-x:auto;color:#E7EEFF}
+  .cmd code::-webkit-scrollbar{height:0}
+  .cmd .prmt{color:#6E9BF5}
+  .copy{appearance:none;border:1px solid rgba(255,255,255,.16);background:transparent;color:rgba(231,238,255,.72);font-family:"IBM Plex Mono",monospace;font-size:.68rem;padding:4px 9px;border-radius:8px;cursor:pointer;flex:none;transition:.2s}
+  .copy:hover{color:#9DBBFF;border-color:#9DBBFF}
+  .copy.done{color:var(--good);border-color:var(--good)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .chip{font-family:"IBM Plex Mono",monospace;font-size:.74rem;padding:7px 12px;border-radius:99px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft)}
+  .chip::before{content:"“";color:var(--blue);margin-right:1px}
+  .chip::after{content:"”";color:var(--blue);margin-left:1px}
+  .src{margin-top:14px;font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--muted)}
+
+  .board{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .task{display:flex;align-items:center;gap:11px;background:var(--card-2);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:.88rem}
+  .prio{font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.05em;padding:3px 8px;border-radius:7px;flex:none}
+  .p1{background:var(--blue-soft);color:var(--blue-deep);border:1px solid var(--blue-line)}
+  :root[data-theme="dark"] .p1{color:var(--blue)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .p1{color:var(--blue)}}
+  .p2{background:var(--card);color:var(--muted);border:1px solid var(--line-2)}
+  .task .tt{flex:1;color:var(--ink)}
+  .task .when{font-family:"IBM Plex Mono",monospace;font-size:.68rem;color:var(--muted);flex:none}
+
+  .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .fcol{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow-sm)}
+  .fcol.center{border-color:var(--blue-line);box-shadow:0 0 0 1px var(--blue-line) inset,var(--shadow-sm)}
+  .kick{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
+  .fcol h4{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.12rem;margin:8px 0 6px}
+  .fcol p{font-size:.9rem;color:var(--ink-soft)}
+  .steps{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+  .step{display:flex;align-items:center;gap:9px;font-family:"IBM Plex Mono",monospace;font-size:.74rem;background:var(--card-2);border:1px solid var(--line);border-radius:9px;padding:7px 10px;color:var(--ink-soft)}
+  .step .pip{width:7px;height:7px;border-radius:50%;background:var(--blue);flex:none}
+  .badge-model{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.06em;color:var(--muted);margin-top:12px;display:block}
+
+  .tree{background:#0B1220;border:1px solid #1a2740;border-radius:16px;box-shadow:var(--shadow-sm);font-family:"IBM Plex Mono",monospace;font-size:.84rem;line-height:2;padding:22px 24px;color:#9fb2d4;overflow-x:auto}
+  .tree .root{color:#E7EEFF;font-weight:600}
+  .tree .dir{color:#7FA6FF}
+  .tree .cmt{color:#5f6f8f}
+  .tree .ln{white-space:pre}
+
+  .tw{border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm);background:var(--card)}
+  .scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.93rem}
+  th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--card-2)}
+  tbody th{font-weight:700;color:var(--ink);width:30%;white-space:nowrap}
+  td{color:var(--ink-soft)}
+  tbody tr:last-child th,tbody tr:last-child td{border-bottom:none}
+  .pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:.72rem;padding:2px 9px;border-radius:99px;background:var(--blue-soft);color:var(--blue-deep);border:1px solid var(--blue-line)}
+  :root[data-theme="dark"] .pill{color:var(--blue)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill{color:var(--blue)}}
+
+  .rails{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .rail{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow-sm)}
+  .rail .ico{width:30px;height:30px;color:var(--good);margin-bottom:12px}
+  .rail h4{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.05rem;margin:0 0 6px}
+  .rail p{font-size:.92rem;color:var(--ink-soft)}
+
+  .final{position:relative;border-radius:26px;overflow:hidden;padding:52px 40px;text-align:center;border:8px solid var(--canvas-brd);background:linear-gradient(170deg,var(--sky-1),var(--sky-2) 75%);box-shadow:var(--shadow-lg)}
+  .final::before{content:"";position:absolute;inset:0;background:radial-gradient(45% 40% at 50% 0%,rgba(255,255,255,.7),transparent 70%);pointer-events:none}
+  :root[data-theme="dark"] .final::before{background:radial-gradient(45% 40% at 50% 0%,rgba(120,160,255,.2),transparent 70%)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .final::before{background:radial-gradient(45% 40% at 50% 0%,rgba(120,160,255,.2),transparent 70%)}}
+  .final h2{position:relative;font-family:"Archivo Black","Archivo",sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(1.8rem,4.4vw,3rem);line-height:1;color:var(--ink)}
+  .final p{position:relative;margin:14px auto 0;max-width:46ch;color:var(--ink-soft)}
+  .final .cmd{position:relative;max-width:560px;margin:26px auto 0;justify-content:space-between;background:rgba(11,18,32,.92)}
+
+  footer{padding:36px 0 54px}
+  footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--muted)}
+
+  .rv{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  @media (max-width:820px){
+    .grid2{grid-template-columns:1fr}
+    .flow{grid-template-columns:1fr}
+    .rails{grid-template-columns:1fr}
+    .corner.top{flex-direction:column;gap:10px}
+    .corner.top .lbl:last-child{text-align:left}
+  }
+  @media (max-width:520px){.navlinks .btn-ghost{display:none}.canvas{padding:18px}}
+</style>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="brand"><span class="b"></span>Second&nbsp;Brain</div>
+    <div class="navlinks">
+      <a class="btn btn-ghost" href="#how">How it works</a>
+      <a class="btn btn-primary" href="#start">Set up mine</a>
+      <button class="toggle" id="tg" aria-label="Toggle day and night theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="canvas">
+    <div class="corner top">
+      <div class="lbl"><b>SECOND BRAIN</b><br><span class="dim">Design &amp; Memory / for Claude&nbsp;Code</span></div>
+      <div class="lbl"><span class="dim">Open source · free. Ships pre-loaded with the practices the best builders won't put in one place, then maps your repos and your meetings.</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="glossy" data-word="hello" aria-label="hello">hello</div>
+      <svg class="cursor3d" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="cg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#EAF2FF"/><stop offset=".45" stop-color="#5A85F5"/><stop offset="1" stop-color="#274FCB"/>
+          </linearGradient>
+        </defs>
+        <path d="M14 8 L52 30 L34 34 L44 54 L36 58 L26 38 L14 48 Z" fill="url(#cg)" stroke="rgba(255,255,255,.6)" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="corner">
+      <div class="headline">
+        <h1>Knows your<br>stack. Runs<br><span class="accent">your day.</span></h1>
+      </div>
+      <div class="lbl" style="align-self:flex-end;text-align:right">
+        <span class="tick">2-click setup</span><br>
+        <span class="dim">40+ practices · git-backed · fathom-ready</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ctastrip">
+  <a class="btn btn-primary" href="#start">Set up my brain →</a>
+  <a class="btn btn-ghost" href="#how">See how the audit works</a>
+  <span class="note">~2 min to install · 5–15 min to seed</span>
+</div>
+
+<!-- TWO CLICKS -->
+<section class="band tint" id="start">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">The whole setup</span>
+      <h2>Two clicks. That's the pitch.</h2>
+      <p>One command installs it, already loaded with practices. One slash command sends Claude to read your world. Everything after that is automatic.</p>
+    </div>
+    <div class="grid2">
+      <div class="card rv">
+        <span class="tag">◆ Click 1 · Install</span>
+        <h3>Lay the foundation</h3>
+        <p>Drops the brain into <span class="mono">~/.claude/brain</span>, pre-loaded with a battle-tested practices pack, and wires up the background capture jobs and the routing file Claude reads every session. Safe to re-run.</p>
+        <div class="cmd"><code><span class="prmt">$</span> bash install-second-brain.sh</code><button class="copy" data-copy="bash install-second-brain.sh">copy</button></div>
+      </div>
+      <div class="card rv">
+        <span class="tag">◆ Click 2 · Seed</span>
+        <h3>Send Claude to read your world</h3>
+        <p>The bootstrap fans out subagents across your repos, git history and working folders, then a single Opus pass organizes what they found into a real, linked brain with an index.</p>
+        <div class="cmd"><code><span class="prmt">claude&gt;</span> /brain-bootstrap</code><button class="copy" data-copy="/brain-bootstrap">copy</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BATTERIES -->
+<section class="band" id="loaded">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">Batteries included</span>
+      <h2>It starts full, not empty.</h2>
+      <p>You don't build a brain from scratch. It ships with the sharpest working patterns from the best builders on X, distilled into rules Claude follows from message one. And it stays current on its own.</p>
+    </div>
+    <div class="grid2">
+      <div class="card rv">
+        <span class="tag">◆ Pre-loaded</span>
+        <h3>Proven practices, on day zero</h3>
+        <p>Curated habits that make Claude sharper, packaged so you never have to think about prompting. You worry about building cool shit; the brain handles the how.</p>
+        <div class="chips">
+          <span class="chip">Lead with the action</span>
+          <span class="chip">One idea per sentence</span>
+          <span class="chip">Verify before "done"</span>
+          <span class="chip">Explore before you commit</span>
+          <span class="chip">Capture decisions live</span>
+          <span class="chip">No workarounds, only real fixes</span>
+        </div>
+        <p class="src">source · distilled from top builders on X</p>
+      </div>
+      <div class="card rv">
+        <span class="tag">◆ Stays current</span>
+        <h3>Updates in one command</h3>
+        <p>We keep finding better patterns. Pull the latest practice pack whenever you want. New rules merge into your brain without touching your own notes.</p>
+        <div class="cmd"><code><span class="prmt">claude&gt;</span> /brain-update</code><button class="copy" data-copy="/brain-update">copy</button></div>
+        <p class="src">merges the shared pack · never overwrites your projects, decisions, or captures</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="band tint" id="how">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">Click 2, in detail</span>
+      <h2>How the seed audit works</h2>
+      <p>The map is the hard part, so we don't guess. A swarm of cheap readers scans everything in parallel; one careful writer turns the pile into a brain. Read-only, start to finish.</p>
+    </div>
+    <div class="flow">
+      <div class="fcol rv">
+        <span class="kick">Fan out</span>
+        <h4>Readers scan in parallel</h4>
+        <p>One subagent per repo or folder. Each skims structure, recent commits and open work, then reports a short summary. No secrets are read.</p>
+        <div class="steps">
+          <div class="step"><span class="pip"></span>repo · api</div>
+          <div class="step"><span class="pip"></span>repo · web</div>
+          <div class="step"><span class="pip"></span>git · last 90d</div>
+        </div>
+        <span class="badge-model">model · Sonnet / Haiku · high concurrency</span>
+      </div>
+      <div class="fcol center rv">
+        <span class="kick">Synthesize</span>
+        <h4>One writer organizes it</h4>
+        <p>A single Opus pass dedupes the reports, keeps what matters, and writes linked notes plus the router that points future sessions at the right file.</p>
+        <div class="steps">
+          <div class="step"><span class="pip"></span>cluster by project</div>
+          <div class="step"><span class="pip"></span>write notes + [[links]]</div>
+          <div class="step"><span class="pip"></span>build index.md</div>
+        </div>
+        <span class="badge-model">model · Opus · judgment-heavy</span>
+      </div>
+      <div class="fcol rv">
+        <span class="kick">Grow</span>
+        <h4>Capture keeps it alive</h4>
+        <p>Background jobs distill each session into staging notes. You review with one command; the brain commits itself to git every 15 minutes.</p>
+        <div class="steps">
+          <div class="step"><span class="pip"></span>session → staging</div>
+          <div class="step"><span class="pip"></span>/review-staging</div>
+          <div class="step"><span class="pip"></span>auto-commit · 15 min</div>
+        </div>
+        <span class="badge-model">model · your session model</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECT -->
+<section class="band" id="connect">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">Plug in your life</span>
+      <h2>Two more clicks, if you want them.</h2>
+      <p>Connect your meetings and let the brain sort your day. Both are optional, both are one click, and neither needs any prompting from you.</p>
+    </div>
+    <div class="grid2">
+      <div class="card rv">
+        <span class="tag">◆ Connect · Fathom</span>
+        <h3>Your meetings, filed automatically</h3>
+        <p>Link Fathom once. Every call you record turns into a summary, the decisions made, and the action items owed, dropped into your brain while you're still walking to the next meeting.</p>
+        <div class="steps" style="margin-top:16px">
+          <div class="step"><span class="pip"></span>call recorded → transcript</div>
+          <div class="step"><span class="pip"></span>decisions → decisions/</div>
+          <div class="step"><span class="pip"></span>action items → your tasks</div>
+        </div>
+      </div>
+      <div class="card rv">
+        <span class="tag">◆ Dashboard</span>
+        <h3>Know what to do next</h3>
+        <p>Tasks and todos pulled from your brain and your meetings into one board, ranked so the thing that matters today sits on top. Less deciding what to do, more doing it.</p>
+        <div class="board">
+          <div class="task"><span class="prio p1">P1</span><span class="tt">Ship the onboarding flow</span><span class="when">today</span></div>
+          <div class="task"><span class="prio p1">P1</span><span class="tt">Review 3 new brain notes</span><span class="when">today</span></div>
+          <div class="task"><span class="prio p2">P2</span><span class="tt">Prep Thursday demo</span><span class="when">this week</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="band tint">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">Why this shape</span>
+      <h2>Audit to seed, capture to grow.</h2>
+      <p>We tried the obvious alternatives. Only the subagent audit gives you a useful brain on day one, so it seeds; the capture jobs do the slow part after.</p>
+    </div>
+    <div class="tw scroll rv">
+      <table>
+        <thead><tr><th>Approach</th><th>What you get</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><th>Subagent audit</th><td>A real map of your repos and work, written on the first run.</td><td><span class="pill">seed · chosen</span></td></tr>
+          <tr><th>Interview only</th><td>Claude asks you questions. Fast, but only as good as what you remember to say.</td><td style="color:var(--muted)">low fidelity</td></tr>
+          <tr><th>Passive accretion</th><td>Install the hooks, let the brain fill up over weeks of sessions.</td><td style="color:var(--muted)">too slow alone</td></tr>
+          <tr><th>Audit + capture + pack</th><td>Ship proven practices, seed your map now, keep it current forever.</td><td><span class="pill">what we ship</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- TREE -->
+<section class="band">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">The artifact</span>
+      <h2>What actually lands on disk</h2>
+      <p>Plain Markdown, Obsidian-compatible, in a private git repo. No database, no lock-in. Open it, edit it, grep it.</p>
+    </div>
+    <div class="tree rv">
+<div class="ln"><span class="root">~/.claude/brain/</span></div>
+<div class="ln"><span class="dir">├─ CLAUDE.md</span>          <span class="cmt"># the router, loaded every session</span></div>
+<div class="ln"><span class="dir">├─ index.md</span>           <span class="cmt"># where everything lives</span></div>
+<div class="ln"><span class="dir">├─ practices/</span>        <span class="cmt"># the shared pack, /brain-update refreshes it</span></div>
+<div class="ln"><span class="dir">├─ projects/</span>         <span class="cmt"># one file per project: stack, urls, deploys</span></div>
+<div class="ln"><span class="dir">├─ references/</span>       <span class="cmt"># infra, services, auth, databases</span></div>
+<div class="ln"><span class="dir">├─ meetings/</span>         <span class="cmt"># Fathom calls → summaries + tasks</span></div>
+<div class="ln"><span class="dir">├─ decisions/</span>       <span class="cmt"># log of what you decided and why</span></div>
+<div class="ln"><span class="dir">├─ tasks.md</span>          <span class="cmt"># the board the dashboard reads</span></div>
+<div class="ln"><span class="dir">└─ staging/</span>         <span class="cmt"># new notes waiting for your review</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SPEC -->
+<section class="band tint">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">The fine print</span>
+      <h2>Time &amp; model requirements</h2>
+      <p>The honest numbers. Seed time scales with how much you have; the model split keeps it cheap where it can be and careful where it counts.</p>
+    </div>
+    <div class="tw scroll rv">
+      <table>
+        <thead><tr><th>Stage</th><th>Time</th><th>Model</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><th>Install (with pack)</th><td class="mono">~2 min</td><td><span class="pill">any</span></td><td>Shell script. Practices pack ships in the box, no model call.</td></tr>
+          <tr><th>Seed · fan-out</th><td class="mono">3–10 min</td><td class="mono">Sonnet / Haiku</td><td>Mechanical scanning, run in parallel across your repos.</td></tr>
+          <tr><th>Seed · synthesis</th><td class="mono">2–5 min</td><td class="mono">Opus</td><td>Organizing a knowledge base needs judgment, not just reading.</td></tr>
+          <tr><th>Update the pack</th><td class="mono">&lt;1 min</td><td><span class="pill">any</span></td><td>Merges the newest practices. Git handles it; your notes stay put.</td></tr>
+          <tr><th>Fathom + dashboard</th><td class="mono">background</td><td>session model</td><td>Meetings ingest and tasks rank on their own. No extra setup.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="mono rv" style="margin-top:16px;font-size:.78rem;color:var(--muted)">Rough seed cost for ~10–15 repos: a few dollars of tokens, once. Fan-out is capped so a big machine can't run away with it.</p>
+  </div>
+</section>
+
+<!-- GUARDRAILS -->
+<section class="band">
+  <div class="wrap">
+    <div class="head rv"><span class="eyebrow">Before you worry</span><h2>What it will never do</h2></div>
+    <div class="rails">
+      <div class="rail rv">
+        <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h4>Read-only audit</h4>
+        <p>The seed pass reads and summarizes. It never edits your code, touches prod, or runs your programs.</p>
+      </div>
+      <div class="rail rv">
+        <svg class="ico" viewBox="0 0 24 24" fill="none"><rect x="4.5" y="10" width="15" height="10" rx="2.2" stroke="currentColor" stroke-width="1.7"/><path d="M8 10V7a4 4 0 018 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <h4>Never stores secrets</h4>
+        <p>It records where a key lives: the store or env var name, never the value itself. The brain holds no raw credentials.</p>
+      </div>
+      <div class="rail rv">
+        <svg class="ico" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".35"/></svg>
+        <h4>Stays on your machine</h4>
+        <p>Plain files in a private repo you control. Yours to read, edit, or delete. Nothing leaves without your git push.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section class="band">
+  <div class="wrap">
+    <div class="final rv">
+      <span class="eyebrow" style="background:rgba(255,255,255,.6);border-color:rgba(255,255,255,.7)">Ready in the time it takes to get coffee</span>
+      <h2 style="margin-top:16px">Give Claude the playbook.</h2>
+      <p>Run the first command. Tell Claude to bootstrap. Come back to a brain that already knows the best practices and your whole stack.</p>
+      <div class="cmd"><code><span class="prmt">$</span> bash install-second-brain.sh &amp;&amp; claude</code><button class="copy" data-copy="bash install-second-brain.sh && claude">copy</button></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Second Brain · for Claude Code teams</div>
+    <div>markdown · git-backed · fathom-ready</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement, tg=document.getElementById('tg');
+  function sysDark(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches}
+  var saved=null;try{saved=localStorage.getItem('sb-theme')}catch(e){}
+  if(saved){root.setAttribute('data-theme',saved)}
+  function cur(){return root.getAttribute('data-theme')||(sysDark()?'dark':'light')}
+  tg.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('sb-theme',n)}catch(e){}});
+  document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var t=b.getAttribute('data-copy');var d=function(){var o=b.textContent;b.textContent='copied ✓';b.classList.add('done');setTimeout(function(){b.textContent=o;b.classList.remove('done')},1400)};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(d).catch(d)}else{d()}});});
+  var els=document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion:reduce)').matches){
+    var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+    els.forEach(function(e){io.observe(e)});
+  }else{els.forEach(function(e){e.classList.add('in')})}
+})();
+</script>
+</body>
+</html>
