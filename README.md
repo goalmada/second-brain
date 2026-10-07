@@ -29,6 +29,22 @@ Keep it current any time with `/brain-update`.
 
 ---
 
+## Optional: Codex subagents on your ChatGPT plan
+
+Let Claude hand work to Codex subagents that run on your ChatGPT subscription, not on API credits.
+
+```bash
+bash second-brain/setup-codex.sh
+```
+
+It installs the Codex CLI and OpenAI's official [Codex plugin for Claude Code](https://github.com/openai/codex-plugin-cc). It locks Codex to ChatGPT sign-in (`forced_login_method = "chatgpt"`) and walks you through `codex login`. Then in Claude Code:
+
+- `/codex:rescue <task>` hands a task to the `codex-rescue` subagent
+- `/codex:review` gets a Codex review of your current diff
+- `/codex:status` and `/codex:result` track background jobs
+
+Usage counts against your plan's Codex limits.
+
 ## What lands on disk
 
 Plain Markdown, Obsidian-compatible, in a private git repo you own. No database, no lock-in.
